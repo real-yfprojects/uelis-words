@@ -21,6 +21,8 @@ jobs:
         steps:
             - name: Install python
               uses: actions/setup-python@v2
+            - name: Update pip
+              run: pip install --upgrade pip
             - name: Install whisper
               run: pip install -U openai-whisper
     init-whisper:
