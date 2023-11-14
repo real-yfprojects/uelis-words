@@ -7,6 +7,7 @@ jobs:
         name: Transcribe
         runs-on: ubuntu-latest
         steps:
+            - uses: actions/checkout@v2
             - name: Setup | Rust
               uses: ATiltedTree/setup-rust@v1
               with:
