@@ -36,7 +36,7 @@ jobs:
               with:
                   path: models
                   key: large-v2
-            - run: whisper --model large-v2 --model_dir models unknown.wav
+            - run: python3 -m whisper --model large-v2 --model_dir models unknown.wav
     transcribe:
         name: Transcribe
         runs-on: ubuntu-latest
