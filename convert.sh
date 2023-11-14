@@ -2,7 +2,6 @@
 set -exu pipefall
 
 # Setup
-mkdir -p wavs
 mkdir -p outputs
 
 # ffmpeg must be installed
