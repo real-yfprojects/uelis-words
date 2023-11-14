@@ -1,4 +1,3 @@
-use chrono::NaiveDateTime;
 use serde::Deserialize;
 use std::env::var;
 use std::fs::File;
@@ -24,11 +23,6 @@ struct Episode {
 fn main() -> anyhow::Result<()> {
     let username = var("USERNAME").expect("USERNAME not set");
     let password = var("PASSWORD").expect("PASSWORD not set");
-    let last_seen =
-        NaiveDateTime::parse_from_str(&var("LAST_SEEN").expect("LAST_SEEN not set"), "%FT%R")
-            .expect(
-                "Failed to parse `LAST_SEEN`. Make sure to use the pseudo ISO: `YYYY-mm-ddTHH:MM`",
-            );
 
     let client = Client::builder().cookie_store(true).build()?;
 
@@ -61,15 +55,9 @@ fn main() -> anyhow::Result<()> {
 
     assert!(metadata.authorized, "Not authorized to access this series.");
 
-    let episodes = metadata
-        .episodes
-        .iter()
-        .filter(|e| NaiveDateTime::parse_from_str(&e.created_at, "%FT%R").unwrap() > last_seen)
-        .collect::<Vec<_>>();
+    println!("Found {} episode(s).", metadata.episodes.len());
 
-    println!("Found {} new episode(s).", episodes.len());
-
-    for episode in episodes {
+    for episode in metadata.episodes {
         let links: EpisodeMetadata = client
             .get(&format!(
 				"https://video.ethz.ch/lectures/d-infk/2023/autumn/252-0025-01L/{}.series-metadata.json",
@@ -98,19 +86,26 @@ fn main() -> anyhow::Result<()> {
         let mut filename = videos.join(&episode.created_at);
         filename.set_extension("mp4");
 
-        println!(
-            "Downloading `{}` to `{}`...",
-            episode.id, episode.created_at
-        );
+        if !filename.exists() {
+            filename.set_extension("tmp");
 
-        std::fs::create_dir_all(&videos)?;
+            println!(
+                "Downloading `{}` to `{}`...",
+                episode.id, episode.created_at
+            );
 
-        client
-            .get(worst.url)
-            .send()?
-            .copy_to(&mut File::create(&filename)?)?;
+            std::fs::create_dir_all(&videos)?;
 
-        println!("Downloaded `{}`.", episode.id);
+            client
+                .get(worst.url)
+                .send()?
+                .copy_to(&mut File::create(&filename)?)?;
+
+            std::fs::rename(&filename, filename.with_extension("mp4"))?;
+            println!("Downloaded `{}`.", episode.id);
+        } else {
+            println!("`{}` already exists.", episode.id);
+        }
     }
     Ok(())
 }
