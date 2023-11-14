@@ -20,56 +20,18 @@ jobs:
                   rust-version: nightly
             - name: Build | Compile
               run: cargo build --release
-    install-whisper:
-        name: Install whisper
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - name: Whisper
+            - name: Rust cache
               uses: actions/cache@v3
               with:
-                  path: ~/.local/bin/whisper
-                  key: whisper
-            - name: Set up Python 3.10
-              uses: actions/setup-python@v4
-              with:
-                  python-version: "3.10"
-            - name: Update pip
-              run: pip install --upgrade pip
-            - name: Install whisper
-              run: pip install -U openai-whisper
-    init-whisper:
-        name: Download model
-        runs-on: ubuntu-latest
-        needs: install-whisper
-        steps:
-            - uses: actions/checkout@v4
-            - name: Whisper
-              uses: actions/cache@v3
-              with:
-                  path: ~/.local/bin/whisper
-                  key: whisper
-                  fail-on-cache-miss: true
-            - name: Cache models
-              uses: actions/cache@v3
-              with:
-                  path: models
-                  key: large-v2
-            - run: whisper --model large-v2 --model_dir models unknown.wav
+                  path: target
+                  key: ${{ hashFiles('src/**/*.rs') }}
     transcribe:
         name: Transcribe
         runs-on: ubuntu-latest
         needs:
-            - init-whisper
             - downloader
         steps:
             - uses: actions/checkout@v3
-            - name: Whisper
-              uses: actions/cache@v3
-              with:
-                  path: ~/.local/bin/whisper
-                  key: whisper
-                  fail-on-cache-miss: true
             - name: Load rust cache
               uses: actions/cache@v3
               with:
@@ -77,7 +39,12 @@ jobs:
                   key: ${{ hashFiles('src/**/*.rs') }}
                   fail-on-cache-miss: true
             - uses: FedericoCarboni/setup-ffmpeg@v2
+            - name: Set up Python 3.10
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.10"
             - run: cargo run --release
+            - run: pip install -U openai-whisper
             - run: for filename in videos/*.mp4; do |
                   whisper "$filename" --model large-v2 --model_dir models/ --output_dir outputs/ --output_format vtt --language de |
                   done
