@@ -6,6 +6,7 @@ jobs:
     transcribe:
         name: Transcribe
         runs-on: ubuntu-latest
+        timeout-minutes: 2880
         steps:
             - uses: actions/checkout@v2
             - name: Setup | Rust
