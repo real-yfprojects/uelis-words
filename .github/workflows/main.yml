@@ -1,0 +1,49 @@
+name: Rust
+
+on: workflow_dispatch
+
+jobs:
+    downloader:
+        name: Compile
+        runs-on: ubuntu-latest
+        steps:
+            - name: Setup | Checkout
+              uses: actions/checkout@v2
+            - name: Setup | Rust
+              uses: ATiltedTree/setup-rust@v1
+              with:
+                  rust-version: nightly
+            - name: Build | Compile
+              run: cargo build --release
+    install-whisper:
+        name: Install whisper
+        runs-on: ubuntu-latest
+        steps:
+            - name: Install python
+              uses: actions/setup-python@v2
+            - name: Install whisper
+              run: pip install -U openai-whisper
+    init-whisper:
+        name: Download model
+        runs-on: ubuntu-latest
+        needs: install-whisper
+        steps:
+            - name: Cache models
+              uses: actions/cache@v3
+              with:
+                  path: models
+                  key: large-v2
+            - run: whisper --model large-v2 --model_dir models unknown.wav
+    transcribe:
+        name: Transcribe
+        runs-on: ubuntu-latest
+        needs:
+            - init-whisper
+            - downloader
+        steps:
+            - uses: actions/checkout@v3
+            - uses: FedericoCarboni/setup-ffmpeg@v2
+            - run: cargo run --release
+            - run: for filename in videos/*.mp4; do |
+                  whisper "$filename" --model large-v2 --model_dir models/ --output_dir outputs/ --output_format vtt --language de |
+                  done
