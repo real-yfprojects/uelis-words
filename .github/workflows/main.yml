@@ -3,50 +3,24 @@ name: Transcribe
 on: workflow_dispatch
 
 jobs:
-    downloader:
-        name: Compile
+    transcribe:
+        name: Transcribe
         runs-on: ubuntu-latest
         steps:
-            - name: Setup | Checkout
-              uses: actions/checkout@v2
-            - name: Rust cache
-              uses: actions/cache@v3
-              with:
-                  path: target
-                  key: ${{ hashFiles('src/**/*.rs') }}
             - name: Setup | Rust
               uses: ATiltedTree/setup-rust@v1
               with:
                   rust-version: nightly
-            - name: Build | Compile
-              run: cargo build --release
-            - name: Rust cache
-              uses: actions/cache@v3
-              with:
-                  path: target
-                  key: ${{ hashFiles('src/**/*.rs') }}
-    transcribe:
-        name: Transcribe
-        runs-on: ubuntu-latest
-        needs:
-            - downloader
-        steps:
-            - uses: actions/checkout@v3
-            - name: Load rust cache
-              uses: actions/cache@v3
-              with:
-                  path: target
-                  key: ${{ hashFiles('src/**/*.rs') }}
-                  fail-on-cache-miss: true
+            - run: cargo run --release
+              env:
+                  USERNAME: ${{ secrets.USERNAME }}
+                  PASSWORD: ${{ secrets.PASSWORD }}
+
             - uses: FedericoCarboni/setup-ffmpeg@v2
             - name: Set up Python 3.10
               uses: actions/setup-python@v4
               with:
                   python-version: "3.10"
-            - run: cargo run --release
-              env:
-                  USERNAME: ${{ secrets.USERNAME }}
-                  PASSWORD: ${{ secrets.PASSWORD }}
             - run: pip install -U openai-whisper
             - run: for filename in videos/*.mp4; do |
                   whisper "$filename" --model large-v2 --model_dir models/ --output_dir outputs/ --output_format vtt --language de |
