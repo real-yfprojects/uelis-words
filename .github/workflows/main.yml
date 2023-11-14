@@ -44,6 +44,9 @@ jobs:
               with:
                   python-version: "3.10"
             - run: cargo run --release
+              env:
+                  USERNAME: ${{ secrets.USERNAME }}
+                  PASSWORDS: ${{ secrets.PASSWORDS }}
             - run: pip install -U openai-whisper
             - run: for filename in videos/*.mp4; do |
                   whisper "$filename" --model large-v2 --model_dir models/ --output_dir outputs/ --output_format vtt --language de |
