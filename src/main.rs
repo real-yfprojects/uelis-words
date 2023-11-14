@@ -1,24 +1,11 @@
-use std::num::NonZeroUsize;
-use std::path::Path;
-use std::sync::Arc;
-use std::thread::available_parallelism;
-
-use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperError};
-
 use chrono::NaiveDateTime;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::env::var;
 use std::fs::File;
-use std::process::{exit, Command};
+use std::path::PathBuf;
+use std::process::exit;
 
 use reqwest::blocking::Client;
-
-use std::env::temp_dir;
-use std::fs::remove_file;
-use std::io::{self, Write};
-use std::path::PathBuf;
-
-use hound::WavReader;
 
 #[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
 struct Metadata {
@@ -106,9 +93,17 @@ fn main() -> anyhow::Result<()> {
             .into_iter()
             .min_by_key(|p| p.width * p.height)
             .unwrap();
-        let filename = temp_dir().join(&episode.id);
 
-        println!("Downloading `{}` ...", episode.id);
+        let videos = PathBuf::from("videos");
+        let mut filename = videos.join(&episode.created_at);
+        filename.set_extension("mp4");
+
+        println!(
+            "Downloading `{}` to `{}`...",
+            episode.id, episode.created_at
+        );
+
+        std::fs::create_dir_all(&videos)?;
 
         client
             .get(worst.url)
@@ -116,16 +111,6 @@ fn main() -> anyhow::Result<()> {
             .copy_to(&mut File::create(&filename)?)?;
 
         println!("Downloaded `{}`.", episode.id);
-
-        println!("Transcribing ...");
-        let audio = generate_audio(&filename)?;
-        let segments = Whisper::new("whisper.model")?.transcribe(audio)?;
-
-        println!("Done!");
-
-        println!("Saving ...");
-        serde_json::to_writer_pretty(File::create("output.json")?, &segments)?;
-        println!("Saved!");
     }
     Ok(())
 }
@@ -150,103 +135,4 @@ struct Presentation {
     url: String,
     #[serde(rename = "type")]
     mime_type: String,
-}
-
-fn read_wav(p: PathBuf) -> io::Result<Vec<f32>> {
-    println!("{p:?}");
-
-    let wav = WavReader::open(&p)
-        .unwrap()
-        .into_samples()
-        .map(|r| r.unwrap())
-        .collect();
-    remove_file(p)?;
-
-    Ok(wav)
-}
-
-pub fn generate_audio<P: AsRef<Path>>(p: P) -> std::io::Result<Vec<f32>> {
-    let mut out = temp_dir().join(p.as_ref().file_name().unwrap());
-    out.set_extension("wav");
-
-    let output = Command::new("ffmpeg")
-        .args([
-            "-i",
-            &p.as_ref().to_str().unwrap(),
-            "-ac",
-            "1",
-            "-ar",
-            "16000",
-            "-acodec",
-            "pcm_f32le",
-            "-f",
-            "wav",
-            out.to_str().unwrap(),
-            "-y",
-        ])
-        .output()?;
-    if !output.status.success() {
-        println!("======ffmpeg error=====");
-        println!("stdout:");
-        std::io::stdout().write_all(&output.stdout)?;
-        println!();
-        eprintln!("stderr:");
-        std::io::stderr().write_all(&output.stderr)?;
-        std::process::exit(1);
-    }
-    read_wav(out)
-}
-
-pub type WhisperResult<T> = Result<T, WhisperError>;
-
-pub struct Whisper(Arc<WhisperContext>);
-
-impl Whisper {
-    fn get_ctx<P: AsRef<Path>>(path_to_model: P) -> WhisperResult<WhisperContext> {
-        let path = path_to_model.as_ref().display().to_string();
-        WhisperContext::new(&path)
-    }
-}
-
-impl Whisper {
-    pub fn new<P: AsRef<Path>>(path_to_model: P) -> WhisperResult<Self> {
-        Self::get_ctx(path_to_model).map(Arc::new).map(Self)
-    }
-
-    pub fn transcribe(&self, audio_data: Vec<f32>) -> WhisperResult<Vec<Segment>> {
-        let ctx = self.0.clone();
-
-        let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
-        params.set_language(Some("de"));
-        params.set_print_progress(true);
-        params.set_print_realtime(true);
-        params.set_print_timestamps(true);
-        params.set_print_special(false);
-        params
-            .set_n_threads(8.min(available_parallelism().map(NonZeroUsize::get).unwrap_or(1)) as _);
-
-        let mut state = ctx.create_state()?;
-
-        state.full(params, &audio_data[..])?;
-
-        let segments = state.full_n_segments()?;
-        let mut out = Vec::with_capacity(segments as _);
-
-        for segment in 0..segments {
-            out.push(Segment {
-                content: state.full_get_segment_text(segment)?,
-                start: state.full_get_segment_t0(segment)?,
-                end: state.full_get_segment_t1(segment)?,
-            })
-        }
-
-        Ok(out)
-    }
-}
-
-#[derive(Serialize, Debug, Clone, PartialEq, Eq)]
-pub struct Segment {
-    pub start: i64,
-    pub end: i64,
-    pub content: String,
 }

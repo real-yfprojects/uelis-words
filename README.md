@@ -9,10 +9,10 @@
 
 ## Workflow
 
+See installation(s) in `convert.sh`
+
 1. login with credentials with a `POST` request at `https://video.ethz.ch/lectures/d-infk/2023/autumn/252-0025-01L.series-login.json`
 2. fetch all lectures at `https://video.ethz.ch/lectures/d-infk/2023/autumn/252-0025-01L.series-metadata.json`
 3. get more info for each new lecture at `https://video.ethz.ch/lectures/d-infk/2023/autumn/252-0025-01L/{}.series-metadata.json`
-4. download the lowest resolution `.mp4` (`.mp3` quality is the same)
-5. convert to `.mp3` with `ffmpeg -i path/to/input.mp4 -ac 1 -ar 16000 -acodec pcm_s16le -f wav path/to/out.wav -y` (to 16kHz mono wav)
-6. transcribe using `large-v2` from `whisper.cpp`, `segmented` mode, language set to `de`
-7. output as `.json`
+4. download the lowest resolution `.mp4` (`.mp3` quality is the same) to `videos/`
+5. transcribe using `large-v2` from `whisper`, `vtt` format, language set to `de`, output to `outputs/`

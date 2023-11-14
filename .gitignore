@@ -21,3 +21,5 @@ Cargo.lock
 env.sh
 whisper.model
 /models
+/videos
+/wavs
