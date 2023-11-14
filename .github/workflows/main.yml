@@ -27,7 +27,7 @@ jobs:
             - name: Update pip
               run: pip install --upgrade pip
             - name: Install whisper
-              run: pip install git+https://github.com/openai/whisper.git
+              run: pip install -U openai-whisper
     init-whisper:
         name: Download model
         runs-on: ubuntu-latest
