@@ -20,14 +20,15 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
-            - name: Install python
+            - name: Set up Python 3.10
               uses: actions/setup-python@v4
               with:
+                  python-version: "3.10"
                   cache: pip
             - name: Update pip
-              run: pip install --upgrade pip
+              run: sudo pip install --upgrade pip
             - name: Install whisper
-              run: pip install -U openai-whisper
+              run: sudo pip install -U openai-whisper
     init-whisper:
         name: Download model
         runs-on: ubuntu-latest
