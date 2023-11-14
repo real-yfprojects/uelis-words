@@ -1,4 +1,4 @@
-name: Rust
+name: Transcribe
 
 on: workflow_dispatch
 
