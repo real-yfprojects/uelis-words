@@ -1,6 +1,7 @@
 #!/bin/bash
 set -exu pipefail
 
-for filename in videos/*.mp4; do
-    whisper "$filename" --model large-v2 --model_dir models/ --output_dir outputs/ --output_format vtt --language de
+# transcribe each .wav using whisper.cpp as json
+for filename in wavs/*.wav; do
+    ./whisper.cpp/main -l de -m whisper.model --output-json-full -pp -of "outputs/$(basename "$filename" .wav)" -f "$filename"
 done

@@ -9,6 +9,8 @@ jobs:
         timeout-minutes: 2880
         steps:
             - uses: actions/checkout@v2
+            - uses: FedericoCarboni/setup-ffmpeg@v2
+            - run: bash setup.sh
             - name: Setup | Rust
               uses: ATiltedTree/setup-rust@v1
               with:
@@ -18,10 +20,4 @@ jobs:
                   USERNAME: ${{ secrets.USERNAME }}
                   PASSWORD: ${{ secrets.PASSWORD }}
 
-            - uses: FedericoCarboni/setup-ffmpeg@v2
-            - name: Set up Python 3.10
-              uses: actions/setup-python@v4
-              with:
-                  python-version: "3.10"
-            - run: pip install -U openai-whisper
             - run: bash transcribe.sh
