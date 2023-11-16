@@ -18,7 +18,7 @@ jobs:
               env:
                   USERNAME: ${{ secrets.USERNAME }}
                   PASSWORD: ${{ secrets.PASSWORD }}
-            # - run: bash transcribe.sh
+            - run: bash transcribe.sh
             - run: git add transcribed.txt outputs
             - run: git config --global user.email "github-actions[bot]@users.noreply.github.com"
             - run: git config --global user.name "github-actions[bot]"
