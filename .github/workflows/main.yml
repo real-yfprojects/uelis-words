@@ -16,7 +16,7 @@ jobs:
             - name: Download if not cached
               id: download-whispercpp
               if: steps.cache-whispercpp.outputs.cache-hit != 'true'
-              run: setup.sh
+              run: bash setup.sh
             - name: Upload whisper.cpp
               uses: actions/upload-artifact@master
               with:
