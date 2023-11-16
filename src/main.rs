@@ -92,7 +92,7 @@ fn main() -> anyhow::Result<()> {
         let mut filename = videos.join(&episode.created_at);
         filename.set_extension("mp4");
 
-        if !transcribed.contains(&episode.id) {
+        if transcribed.iter().all(|t| !t.contains(&episode.created_at)) {
             filename.set_extension("tmp");
 
             println!(
