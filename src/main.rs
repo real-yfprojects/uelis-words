@@ -57,6 +57,12 @@ fn main() -> anyhow::Result<()> {
 
     println!("Found {} episode(s).", metadata.episodes.len());
 
+    let transcribed = std::fs::read_to_string("transcribed.txt")?
+        .lines()
+        .map(|s| s.to_string())
+        .filter(|l| !l.is_empty())
+        .collect::<Vec<_>>();
+
     for episode in metadata.episodes {
         let links: EpisodeMetadata = client
             .get(&format!(
@@ -86,7 +92,7 @@ fn main() -> anyhow::Result<()> {
         let mut filename = videos.join(&episode.created_at);
         filename.set_extension("mp4");
 
-        if !filename.exists() {
+        if !transcribed.contains(&episode.id) {
             filename.set_extension("tmp");
 
             println!(

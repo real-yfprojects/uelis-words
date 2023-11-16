@@ -23,5 +23,3 @@ make large-v2
 make quantize
 ./quantize models/ggml-large-v2.bin models/ggml-large-v2q.bin 2
 cd ..
-
-cp ./whisper.cpp/models/ggml-large-v2q.bin whisper.model
