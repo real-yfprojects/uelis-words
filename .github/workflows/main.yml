@@ -7,6 +7,7 @@ jobs:
         name: Install whisper
         runs-on: ubuntu-latest
         steps:
+            - uses: actions/checkout@v2
             - name: Cache whisper.cpp
               id: cache-whispercpp
               uses: actions/cache@v3
