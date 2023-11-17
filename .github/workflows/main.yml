@@ -18,9 +18,15 @@ jobs:
               env:
                   USERNAME: ${{ secrets.USERNAME }}
                   PASSWORD: ${{ secrets.PASSWORD }}
+            - run: if [ -z "$(ls -A wavs)" ]; then
+                  exit 1
+                  fi
             - run: bash transcribe.sh
             - run: git add transcribed.txt outputs
             - run: git config --global user.email "github-actions[bot]@users.noreply.github.com"
             - run: git config --global user.name "github-actions[bot]"
             - run: git commit -m "Transcribe"
             - run: git push
+            - run: gh workflow run main.ymlenv
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
