@@ -1,0 +1,31 @@
+{
+    "systeminfo": "AVX = 1 | AVX2 = 1 | AVX512 = 0 | FMA = 1 | NEON = 0 | ARM_FMA = 0 | METAL = 0 | F16C = 1 | FP16_VA = 0 | WASM_SIMD = 0 | BLAS = 0 | SSE3 = 1 | SSSE3 = 1 | VSX = 0 | CUDA = 0 | COREML = 0 | OPENVINO = 0 | ",
+    "model": {
+        "type": "large",
+        "multilingual": true,
+        "vocab": 51865,
+        "audio": {
+            "ctx": 1500,
+            "state": 1280,
+            "head": 20,
+            "layer": 32
+        },
+        "text": {
+            "ctx": 448,
+            "state": 1280,
+            "head": 20,
+            "layer": 32
+        },
+        "mels": 80,
+        "ftype": 2
+    },
+    "params": {
+        "model": "whisper.cpp/models/ggml-large-v2q.bin",
+        "language": "de",
+        "translate": false
+    },
+    "result": {
+        "language": "de"
+    },
+    "transcription": []
+}
