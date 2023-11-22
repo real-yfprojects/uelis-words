@@ -20,11 +20,16 @@ jobs:
                   PASSWORD: ${{ secrets.PASSWORD }}
             - run: if [ -z "$(ls -A wavs)" ]; then exit 1; fi
             - run: bash transcribe.sh
-            - run: git add transcribed.txt outputs
-            - run: git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            - run: git config --global user.name "github-actions[bot]"
-            - run: git commit -m "Transcribe"
-            - run: git push
+            - name: Create Pull Request
+              uses: peter-evans/create-pull-request@v5
+              with:
+                  add-paths: |
+                      transcribed.txt
+                      outputs
+                  commit-message: Transcribe
+                  branch-suffix: timestamp
+                  branch: transcribe
+                  delete-branch: true
             - run: gh workflow run main.yml
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
