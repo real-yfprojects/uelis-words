@@ -17,7 +17,7 @@ See installation(s) in `convert.sh`
 4. download the lowest resolution `.mp4` (`.mp3` quality is the same) to `videos/`
 5. transcribe using `large-v2` from `whisper`, `vtt` format, language set to `de`, output to `outputs/`
 
-## for yf (who is that?)
+## Run locally
 
 1. download and install rust (stable should be enough)
 2. `. env.sh` (load username & pwd into env vars)
